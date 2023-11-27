@@ -7,22 +7,30 @@ import Users from "./pages/Users.jsx";
 import Settings from "./pages/Settings.jsx";
 import PageNotFound from "./pages/PageNotFound.jsx";
 import Login from "./pages/Login.jsx";
+import GlobalStyles from "./styles/GlobalStyled.js";
+import AppLayout from "./ui/AppLayout.jsx";
 
 function App() {
     return (
+        <>
+        <GlobalStyles/>
         <BrowserRouter>
             <Routes>
                 <Route index element={<Navigate replace to="dashboard"/>}></Route>
-                <Route path="dashboard" element={<Dashboard/>}></Route>
-                <Route path="account" element={<Account/>}></Route>
-                <Route path="booking" element={<Bookings/>}></Route>
-                <Route path="cabins" element={<Cabins/>}></Route>
+                <Route element={<AppLayout/>}>
+                    <Route path="dashboard" element={<Dashboard/>}></Route>
+                    <Route path="account" element={<Account/>}></Route>
+                    <Route path="booking" element={<Bookings/>}></Route>
+                    <Route path="cabins" element={<Cabins/>}></Route>
+                    <Route path="users" element={<Users/>}></Route>
+                    <Route path="settings" element={<Settings/>}></Route>
+                </Route>
                 <Route path="login" element={<Login/>}></Route>
-                <Route path="users" element={<Users/>}></Route>
-                <Route path="settings" element={<Settings/>}></Route>
                 <Route path="*" element={<PageNotFound/>}></Route>
             </Routes>
         </BrowserRouter>
+
+        </>
     );
 }
 
