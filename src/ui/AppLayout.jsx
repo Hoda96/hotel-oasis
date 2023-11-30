@@ -6,6 +6,7 @@ import styled from "styled-components";
 const Main = styled.main`
 background-color: var(--color-grey-50);
   height: 100vh;
+  padding: 2rem;
 `;
 const StyledAppLayout= styled.div`
 display: grid;
