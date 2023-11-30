@@ -20,7 +20,7 @@ function Cabins() {
           variation="primary"
           onClick={() => setShowForm((show) => !show)}
         >
-          Cabin Form
+          Add New Cabin
         </Button>
         {showForm && <CreateCabinForm />}
       </Row>
