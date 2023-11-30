@@ -1,7 +1,8 @@
 import styled from "styled-components";
-import PropTypes from 'prop-types';
-import {formatCurrency} from "../../utils/helpers.js";
-
+import PropTypes from "prop-types";
+import { formatCurrency } from "../../utils/helpers.js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteCabins } from "../../services/apiCabins.js";
 
 const TableRow = styled.div`
   display: grid;
@@ -42,22 +43,43 @@ const Discount = styled.div`
   color: var(--color-green-700);
 `;
 
+function CabinRow({ cabin }) {
+  const {
+    id: cabinId,
+    name,
+    image,
+    maxCapacity,
+    regularPrice,
+    discount,
+  } = cabin;
 
-function CabinRow({cabin}) {
-    const{name,image,maxCapacity,regularPrice,discount}=cabin;
-    return (
-        <TableRow role="row">
-            <Img src={image}/>
-            <Cabin>{name}</Cabin>
-            <Cabin>Fits up to {maxCapacity} guests</Cabin>
-            <Price>{formatCurrency(regularPrice)}</Price>
-            <Discount>{formatCurrency(discount)}</Discount>
-            <button>Delete</button>
-        </TableRow>
-    );
+  const queryClient = useQueryClient();
+  const { isLoading: isDeleting, mutate } = useMutation({
+    mutationFn: (id) => deleteCabins(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["cabins"],
+      });
+      alert("cabin deleted.");
+    },
+    onError: (err) => alert(err.message),
+  });
+
+  return (
+    <TableRow role="row">
+      <Img src={image} />
+      <Cabin>{name}</Cabin>
+      <Cabin>Fits up to {maxCapacity} guests</Cabin>
+      <Price>{formatCurrency(regularPrice)}</Price>
+      <Discount>{formatCurrency(discount)}</Discount>
+      <button onClick={() => mutate(cabinId)} disabled={isDeleting}>
+        Delete
+      </button>
+    </TableRow>
+  );
 }
 
 CabinRow.propTypes = {
-    cabin: PropTypes.node,
+  cabin: PropTypes.node,
 };
 export default CabinRow;
