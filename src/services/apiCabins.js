@@ -1,4 +1,4 @@
-import supabase from "./supabase.js";
+import supabase, { supabaseUrl } from "./supabase.js";
 
 export async function getCabins() {
   let { data, error } = await supabase.from("cabins").select("*");
@@ -10,25 +10,57 @@ export async function getCabins() {
   return data;
 }
 
+export async function createEditCabins(newCabin, id) {
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
+
+  const imageName = hasImagePath
+    ? newCabin.image
+    : `${Math.random().toFixed(3) * 1000}-${newCabin.image.name}`.replaceAll(
+        "/",
+        ""
+      );
+
+  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+
+  //1. Create/Edit Cabin
+  let query = supabase.from("cabins");
+  // A) Create
+  if (!id) query = query.insert([{ ...newCabin, image: imagePath }]);
+  // B) Edit
+  if (id) query = query.update({ ...newCabin, image: imagePath }).eq("id", id);
+
+  const { data, error } = await query.select().single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Cabin could not be created :(");
+  }
+
+  // 2. Upload image
+  if (hasImagePath) return data;
+
+  const { error: storageError } = await supabase.storage
+    .from("cabin-images")
+    .upload(imageName, newCabin.image);
+
+  //3. Delete cabin IF there was uploading problem
+  if (storageError) {
+    await supabase.from("cabins").delete().eq("id", data.id);
+
+    console.error(storageError);
+    throw new Error(
+      "Cabin image could not be uploaded and cabin is not created. :("
+    );
+  }
+  return data;
+}
+
 export async function deleteCabins(id) {
   const { data, error } = await supabase.from("cabins").delete().eq("id", id);
 
   if (error) {
     console.error(error);
     throw new Error("Cabin could not be deleted :(");
-  }
-  return data;
-}
-
-export async function createCabins(newCabin) {
-  const { data, error } = await supabase
-    .from("cabins")
-    .insert([newCabin])
-    .select();
-
-  if (error) {
-    console.error(error);
-    throw new Error("Cabin could not be created :(");
   }
   return data;
 }
